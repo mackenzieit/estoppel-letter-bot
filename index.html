@@ -1,23 +1,17 @@
 <!doctype html>
 <html>
+  
 <head><meta charset="utf-8"/><title>ChatKit Estoppel Letter</title></head>
+  
 <body>
-  <openai-chatkit id="chat"></openai-chatkit>
-  <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async></script>
-  <script type="module">
-    await customElements.whenDefined('openai-chatkit');
-    const el = document.getElementById('chat');
-    el.setOptions({
-      api: {
-        async getClientSecret(existing) {
-          if (existing) return existing;
-          const r = await fetch('/api/create-session', { method: 'POST' });
-          if (!r.ok) throw new Error('session create failed');
-          const body = await r.json();
-          return body.client_secret;
-        }
-      }
-    });
-  </script>
+  
+    <openai-chatkit id="chat"></openai-chatkit>
+    
+    <!-- ChatKit CDN script (remote) -->
+    <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async></script>
+    
+    <!-- Local module that initializes ChatKit; served from same origin -->
+    <script type="module" src="/init-chatkit.js"></script>
+
 </body>
 </html>
