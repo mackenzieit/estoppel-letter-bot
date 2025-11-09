@@ -1,7 +1,14 @@
-// Azure Functions JavaScript handler (simple REST call to OpenAI ChatKit sessions)
-// This file will live at: api/create-session/index.js
-
+// api/create-session/index.js
 const fetch = globalThis.fetch || require('node-fetch');
+
+// simple UUIDv4 generator (no dependency)
+function makeUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 module.exports = async function (context, req) {
   // CORS preflight
@@ -24,47 +31,42 @@ module.exports = async function (context, req) {
       return;
     }
 
-    // Prepare request body for ChatKit. If you don't want to provide a workflow yet,
-    // we will still attempt the request — but log a warning.
-    const requestBody = {};
-    if (WORKFLOW_ID) {
-      requestBody.workflow = { id: WORKFLOW_ID };
-    } else {
-      context.log.warn('CHATKIT_WORKFLOW_ID not set — sending session request without workflow (if API requires workflow this may fail).');
-    }
+    // Accept user from client (preferred) or generate a UUID here.
+    // The client can supply a stable id (e.g., cookie-based) later; for now we produce a fallback.
+    const clientUser = (req && req.body && req.body.user) ? req.body.user : `user-${makeUUID()}`;
 
-    // Call OpenAI ChatKit sessions endpoint
+    const requestBody = { user: clientUser };
+    if (WORKFLOW_ID) requestBody.workflow = { id: WORKFLOW_ID };
+    else context.log.warn('CHATKIT_WORKFLOW_ID not set — sending session request with only user.');
+
+    context.log('create-session: calling OpenAI with user', clientUser, 'workflowPresent=', !!WORKFLOW_ID);
+
     const resp = await fetch('https://api.openai.com/v1/chatkit/sessions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
-        // REQUIRED: ChatKit access header (fixes invalid_beta / 502)
         'OpenAI-Beta': 'chatkit_beta=v1'
       },
       body: JSON.stringify(requestBody)
     });
 
-    // If non-OK, capture body (try JSON then text) and return 502 with details
     if (!resp.ok) {
       let details;
-      try {
-        details = await resp.json();
-      } catch (e) {
-        details = await resp.text();
-      }
+      try { details = await resp.json(); } catch (e) { details = await resp.text(); }
       context.log.error('OpenAI session create failed', resp.status, details);
       context.res = { status: 502, body: { error: 'OpenAI session creation failed', details } };
       return;
     }
 
-    // Success: parse response and return client_secret to frontend
     const data = await resp.json();
     const clientSecret = data?.client_secret ?? data;
+    context.log('OpenAI session created', { client_secret_present: !!data?.client_secret });
+
     context.res = {
       status: 200,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-      body: { client_secret: clientSecret }
+      body: { client_secret: clientSecret, user: clientUser }
     };
   } catch (err) {
     context.log.error('Unhandled exception in create-session', err);
