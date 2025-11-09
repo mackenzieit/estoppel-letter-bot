@@ -1,0 +1,6 @@
+{
+  "globalHeaders": {
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' https://cdn.platform.openai.com; connect-src 'self' https://api.openai.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline';"
+  },
+  "navigationFallback": { "rewrite": "/index.html" }
+}
