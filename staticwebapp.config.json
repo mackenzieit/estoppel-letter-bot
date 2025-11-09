@@ -1,6 +1,6 @@
 {
   "globalHeaders": {
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' https://cdn.platform.openai.com; connect-src 'self' https://api.openai.com https://cdn.platform.openai.com https://platform.openai.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline';"
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' https://cdn.platform.openai.com; connect-src 'self' https://api.openai.com https://cdn.platform.openai.com https://platform.openai.com; frame-src 'self' https://cdn.platform.openai.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline';"
   },
   "navigationFallback": {
     "rewrite": "/index.html"
