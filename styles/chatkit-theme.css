@@ -1,0 +1,38 @@
+/* chatkit-theme.css
+   Styles and safe sizing for the openai-chatkit host element and injected iframe.
+   Name expresses intent (theme/styling), not a "fix".
+*/
+
+openai-chatkit#chat,
+#chat {
+  display: block;
+  width: 100%;
+  max-width: 900px;     /* wide desktop cap - adjust if needed */
+  min-height: 52vh;     /* responsive minimum height */
+  height: 64vh;         /* makes widget large enough on most screens */
+  margin: 40px auto;
+  position: relative;
+  z-index: 50;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+/* Ensure the internal iframe brought by ChatKit fills the host.
+   Use !important only here because the iframe and host are inside shadow DOM. */
+openai-chatkit#chat ::slotted(.ck-iframe),
+openai-chatkit#chat .ck-iframe,
+openai-chatkit#chat iframe {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 320px !important;
+}
+
+/* Small responsive tweak for narrow screens */
+@media (max-width: 480px) {
+  openai-chatkit#chat,
+  #chat {
+    height: 72vh;
+    min-height: 420px;
+    padding: 12px;
+  }
+}
