@@ -1,9 +1,5 @@
-// init-chatkit.js
-// Same-origin module that initializes the openai-chatkit element.
-// - waits for the web component to register
-// - requests a client_secret from /api/create-session
-// - retries transient failures with exponential backoff
-// - surfaces clear errors in the console
+// init-chatkit.js — same-origin module that initializes the openai-chatkit element.
+// Hardened: waits for registration, retries create-session, explicit returns.
 
 const DEFAULT_TIMEOUT_MS = 8000;
 const MAX_ATTEMPTS = 3;
@@ -54,7 +50,7 @@ async function createSessionWithRetries(path = '/api/create-session') {
       return json;
     } catch (err) {
       const isLast = attempt >= MAX_ATTEMPTS;
-      console.warn(`[init-chatkit] create-session attempt ${attempt} failed:`, err?.message ?? err);
+      console.warn('[init-chatkit] create-session attempt', attempt, 'failed:', err?.message ?? err);
       if (isLast) throw err;
       const backoff = BACKOFF_BASE_MS * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 200);
       await delay(backoff);
@@ -65,7 +61,7 @@ async function createSessionWithRetries(path = '/api/create-session') {
 
 (async () => {
   try {
-    // Wait for the component to register (timeout fallback)
+    // Wait for the component to register (with timeout)
     const wait = customElements.whenDefined('openai-chatkit');
     const registrationTimeout = new Promise((_, rej) =>
       setTimeout(() => rej(new Error('openai-chatkit did not register in time')), 5000)
@@ -75,7 +71,7 @@ async function createSessionWithRetries(path = '/api/create-session') {
     const el = document.getElementById('chat');
     if (!el) {
       console.error('[init-chatkit] Chat element not found (#chat)');
-      return; // early return (same behaviour as your original)
+      return; // early exit
     }
 
     el.setOptions({
@@ -88,16 +84,13 @@ async function createSessionWithRetries(path = '/api/create-session') {
           }
           return json.client_secret;
         }
-      },
-      onError(err) {
-        console.error('[init-chatkit] ChatKit error:', err);
       }
     });
 
     console.info('[init-chatkit] initialization complete');
-    return; // explicit final return for clarity (matches your preference)
+    return;
   } catch (err) {
     console.error('[init-chatkit] initialization failed:', err);
-    return; // explicit return on failure
+    return;
   }
 })();
