@@ -1,15 +1,6 @@
 // api/create-session/index.js
 const fetch = globalThis.fetch || require('node-fetch');
 
-// simple UUIDv4 generator (no dependency)
-function makeUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
 module.exports = async function (context, req) {
   // CORS preflight
   if (req.method === 'OPTIONS') {
