@@ -33,7 +33,7 @@ async function createSessionWithRetries(path = '/api/create-session') {
 
       const text = await resp.text();
       let json = null;
-      try { json = text ? JSON.parse(text) : null; } catch (e) { /* not JSON */ }
+      try { json = text ? JSON.parse(text) : null; } catch (e) {}
 
       if (!resp.ok) {
         const detail = json ?? text ?? `HTTP ${resp.status}`;
@@ -61,7 +61,6 @@ async function createSessionWithRetries(path = '/api/create-session') {
 
 (async () => {
   try {
-    // Wait for the component to register (with timeout)
     const wait = customElements.whenDefined('openai-chatkit');
     const registrationTimeout = new Promise((_, rej) =>
       setTimeout(() => rej(new Error('openai-chatkit did not register in time')), 5000)
@@ -71,23 +70,33 @@ async function createSessionWithRetries(path = '/api/create-session') {
     const el = document.getElementById('chat');
     if (!el) {
       console.error('[init-chatkit] Chat element not found (#chat)');
-      return; // early exit
+      return;
     }
 
-  el.setOptions({
-    api: {
-      async getClientSecret() {
-        const r = await fetch('/api/create-session', { method: 'POST' });
-        if (!r.ok) {
-          const text = await r.text();
-          throw new Error('session create failed: ' + r.status + ' ' + text);
+    // NEW: capture server-side stream errors (will include node/tool details)
+    el.addEventListener('error', (e) => {
+      console.error('[chatkit error]', e?.detail || e);
+    });
+
+    // NEW (optional): see all server events; comment out if too noisy
+    // el.addEventListener('message', (e) => {
+    //   console.debug('[chatkit event]', e.detail?.type || e.type, e.detail);
+    // });
+
+    el.setOptions({
+      api: {
+        async getClientSecret(existing) {
+          if (existing) return existing;
+          const r = await fetch('/api/create-session', { method: 'POST' });
+          if (!r.ok) {
+            const text = await r.text();
+            throw new Error('session create failed: ' + r.status + ' ' + text);
+          }
+          const { client_secret } = await r.json();
+          return client_secret;
         }
-        const { client_secret } = await r.json();
-        return client_secret;
       }
-    }
-  });
-
+    });
 
     console.info('[init-chatkit] initialization complete');
     return;
