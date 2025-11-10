@@ -1,20 +1,14 @@
-<!doctype html>
-<html>
-  
-<head><meta charset="utf-8"/><title>ChatKit Estoppel Letter</title></head>
-  
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ChatKit Estoppel Bot</title>
+  <link rel="stylesheet" href="/chatkit-theme.css" />
+</head>
 <body>
-  
-    <openai-chatkit id="chat"></openai-chatkit>
+  <openai-chatkit id="chat" aria-label="AI Bot Conversation"></openai-chatkit>
 
-    <!-- ChatKit CSS -->
-    <link rel="stylesheet" href="/styles/chatkit-theme.css">
-
-    <!-- ChatKit CDN script (remote) -->
-    <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async></script>
-    
-    <!-- Local module that initializes ChatKit; served from same origin -->
-    <script type="module" src="/init-chatkit.js"></script>
-
+  <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async></script>
+  <script type="module" src="/init-chatkit.js"></script>
 </body>
 </html>
