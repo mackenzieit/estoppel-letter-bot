@@ -6,24 +6,26 @@
   <title>ChatKit Estoppel Bot</title>
 
   <link rel="stylesheet" href="/styles/chatkit-theme.css" />
-  
-  <!-- Optionally try to improve latency (can remove if needed) -->
+
+  <!-- Optional latency hints -->
   <link rel="preconnect" href="https://api.openai.com" crossorigin>
   <link rel="preconnect" href="https://cdn.platform.openai.com" crossorigin>
   <link rel="dns-prefetch" href="//api.openai.com">
   <link rel="dns-prefetch" href="//cdn.platform.openai.com">
-  
 </head>
 <body>
-  <!-- Give the widget an accessible name via its container, not the custom element -->
+  <!-- Accessible container for the widget -->
   <section role="region" aria-label="AI assistant">
     <openai-chatkit id="chat"></openai-chatkit>
   </section>
 
-  <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async></script>
+  <!-- ChatKit runtime -->
+  <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" defer></script>
+
+  <!-- Teams SDK (2.x) — must load before init-chatkit.js -->
+  <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js" defer></script>
+
+  <!-- Your initializer (captures Teams token if present) -->
   <script type="module" src="/init-chatkit.js"></script>
-
-  <script src="https://res.cdn.office.net/teams-js/v2/teamsapp.min.js" async></script>
-
 </body>
 </html>
