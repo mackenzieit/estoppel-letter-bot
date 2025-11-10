@@ -1,8 +1,0 @@
-//Added to remove onyx non-dealbreaker message.
-
-{
-  "name": "swa-functions",
-  "version": "1.0.0",
-  "private": true,
-  "engines": { "node": ">=18" }
-}
