@@ -74,18 +74,20 @@ async function createSessionWithRetries(path = '/api/create-session') {
       return; // early exit
     }
 
-    el.setOptions({
-      api: {
-        async getClientSecret(existing) {
-          if (existing) return existing;
-          const json = await createSessionWithRetries('/api/create-session');
-          if (!json || !json.client_secret) {
-            throw new Error('create-session returned invalid payload');
-          }
-          return json.client_secret;
+  el.setOptions({
+    api: {
+      async getClientSecret() {
+        const r = await fetch('/api/create-session', { method: 'POST' });
+        if (!r.ok) {
+          const text = await r.text();
+          throw new Error('session create failed: ' + r.status + ' ' + text);
         }
+        const { client_secret } = await r.json();
+        return client_secret;
       }
-    });
+    }
+  });
+
 
     console.info('[init-chatkit] initialization complete');
     return;
