@@ -20,6 +20,32 @@ async function fetchWithTimeout(url, opts = {}, timeoutMs = DEFAULT_TIMEOUT_MS) 
   }
 }
 
+/* ========================== ADDED: Teams SSO capture ========================== */
+/** Holds a Teams SSO token when hosted inside the Teams webview; null otherwise. */
+let teamsToken = null;
+
+async function tryGetTeamsToken() {
+  try {
+    // Only attempt if the Teams SDK is available
+    if (!window.microsoftTeams?.app) return null;
+
+    await window.microsoftTeams.app.initialize();
+
+    // This requires your Teams app manifest to include webApplicationInfo
+    // (AAD App ID / resource) so SSO can issue a token.
+    const t = await window.microsoftTeams.authentication.getAuthToken();
+    teamsToken = t;
+    return t;
+  } catch {
+    // non-Teams host or SSO not ready — ignore
+    return null;
+  }
+}
+
+// Fire-and-forget; if it resolves later, subsequent calls will use the token.
+tryGetTeamsToken();
+/* ======================== END ADDED: Teams SSO capture ======================== */
+
 async function createSessionWithRetries(path = '/api/create-session') {
   let attempt = 0;
   while (attempt < MAX_ATTEMPTS) {
@@ -27,7 +53,12 @@ async function createSessionWithRetries(path = '/api/create-session') {
     try {
       const resp = await fetchWithTimeout(path, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          /* =============== ADDED: forward Teams token to your API =============== */
+          ...(teamsToken ? { 'x-msteams-token': teamsToken } : {})
+          /* ============= END ADDED: forward Teams token to your API ============ */
+        },
         credentials: 'same-origin'
       });
 
@@ -105,7 +136,11 @@ async function createSessionWithRetries(path = '/api/create-session') {
           if (existing) return existing;
 
           // ===== PERF INSTRUMENTATION START (create-session) =====
-          try { performance.clearMarks('ck.session.start'); performance.clearMarks('ck.session.end'); performance.clearMeasures('ck session ms'); } catch {}
+          try {
+            performance.clearMarks('ck.session.start');
+            performance.clearMarks('ck.session.end');
+            performance.clearMeasures('ck session ms');
+          } catch {}
           performance.mark('ck.session.start');
           // ===== PERF INSTRUMENTATION END =====
 
