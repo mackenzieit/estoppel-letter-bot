@@ -103,7 +103,22 @@ async function createSessionWithRetries(path = '/api/create-session') {
       api: {
         async getClientSecret(existing) {
           if (existing) return existing;
+
+          // ===== PERF INSTRUMENTATION START (create-session) =====
+          try { performance.clearMarks('ck.session.start'); performance.clearMarks('ck.session.end'); performance.clearMeasures('ck session ms'); } catch {}
+          performance.mark('ck.session.start');
+          // ===== PERF INSTRUMENTATION END =====
+
           const r = await createSessionWithRetries('/api/create-session');
+
+          // ===== PERF INSTRUMENTATION START (create-session) =====
+          performance.mark('ck.session.end');
+          const m = performance.measure('ck session ms', 'ck.session.start', 'ck.session.end');
+          if (m && m.duration != null) {
+            console.info('[perf] create-session:', Math.round(m.duration), 'ms');
+          }
+          // ===== PERF INSTRUMENTATION END =====
+
           return r.client_secret;
         }
       }
