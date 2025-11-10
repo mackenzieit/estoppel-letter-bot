@@ -4,5 +4,15 @@
     "X-Content-Type-Options": "nosniff",
     "Cache-Control": "no-store"
   },
-  "navigationFallback": { "rewrite": "/index.html" }
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/api/*",
+      "/chatkit-theme.css",
+      "/init-chatkit.js",
+      "/*.css",
+      "/*.js",
+      "/assets/*"
+    ]
+  }
 }
