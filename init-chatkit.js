@@ -68,6 +68,15 @@ async function createSessionWithRetries(path = '/api/create-session') {
     await Promise.race([wait, registrationTimeout]);
 
     const el = document.getElementById('chat');
+    // In init-chatkit.js, right after you find `const el = document.getElementById('chat');` Added to fix "Title the internal iframe'
+        const labelIframe = () => {
+          const ifr = el.shadowRoot?.querySelector('iframe');
+          if (ifr && !ifr.title) ifr.title = 'AI Bot Conversation frame';
+        };
+        new MutationObserver(labelIframe).observe(el, { childList: true, subtree: true });
+        labelIframe();
+
+    
     if (!el) {
       console.error('[init-chatkit] Chat element not found (#chat)');
       return;
