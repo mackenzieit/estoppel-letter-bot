@@ -3,27 +3,23 @@
     "Content-Security-Policy": "default-src 'self'; script-src 'self' https://cdn.platform.openai.com; connect-src 'self' https://api.openai.com https://cdn.platform.openai.com https://platform.openai.com; frame-src 'self' https://cdn.platform.openai.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline';",
     "X-Content-Type-Options": "nosniff"
   },
-  "responseOverrides": {
-    "/styles/*": {
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
+
+  "routes": [
+    {
+      "route": "/styles/*",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
     },
-    "/init-chatkit.js": {
-      "headers": {
-        "cache-control": "public, max-age=3600"
-      }
+    {
+      "route": "/init-chatkit.js",
+      "headers": { "Cache-Control": "public, max-age=3600" }
     }
-  },
+  ],
+
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": [
-      "/api/*",
-      "/styles/*",
-      "/*.css",
-      "/*.js",
-      "/assets/*",
-      "/init-chatkit.js"
+      "/api/*"
+      // (You don't need to exclude static assets; SWA serves them directly.)
     ]
   }
 }
