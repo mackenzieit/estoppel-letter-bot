@@ -1,12 +1,18 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ChatKit Estoppel Bot</title>
-  <link rel="stylesheet" href="/styles/chatkit-theme.css">
+
+  <link rel="stylesheet" href="/styles/chatkit-theme.css" />
 </head>
 <body>
-  <openai-chatkit id="chat" aria-label="AI Bot Conversation"></openai-chatkit>
+  <!-- Give the widget an accessible name via its container, not the custom element -->
+  <section role="region" aria-label="AI assistant">
+    <openai-chatkit id="chat"></openai-chatkit>
+  </section>
+
   <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async></script>
   <script type="module" src="/init-chatkit.js"></script>
 </body>
