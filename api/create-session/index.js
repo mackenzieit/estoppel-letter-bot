@@ -22,25 +22,16 @@ module.exports = async function (context, req) {
   }
 
   try {
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-    const WORKFLOW_ID = process.env.CHATKIT_WORKFLOW_ID;
 
-    if (!OPENAI_API_KEY) {
-      context.log.error('Missing env var: OPENAI_API_KEY');
-      context.res = { status: 500, body: { error: 'Server misconfiguration: missing OPENAI_API_KEY' } };
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+    const WORKFLOW_ID    = process.env.CHATKIT_WORKFLOW_ID;
+    
+    if (!OPENAI_API_KEY || !WORKFLOW_ID) {
+      context.log.error('Missing env vars OPENAI_API_KEY or CHATKIT_WORKFLOW_ID');
+      context.res = { status: 500, body: { error: 'Server misconfiguration' } };
       return;
     }
-
-    // Accept user from client (preferred) or generate a UUID here.
-    // The client can supply a stable id (e.g., cookie-based) later; for now we produce a fallback.
-    const clientUser = (req && req.body && req.body.user) ? req.body.user : `user-${makeUUID()}`;
-
-    const requestBody = { user: clientUser };
-    if (WORKFLOW_ID) requestBody.workflow = { id: WORKFLOW_ID };
-    else context.log.warn('CHATKIT_WORKFLOW_ID not set — sending session request with only user.');
-
-    context.log('create-session: calling OpenAI with user', clientUser, 'workflowPresent=', !!WORKFLOW_ID);
-
+    
     const resp = await fetch('https://api.openai.com/v1/chatkit/sessions', {
       method: 'POST',
       headers: {
@@ -48,8 +39,12 @@ module.exports = async function (context, req) {
         'Content-Type': 'application/json',
         'OpenAI-Beta': 'chatkit_beta=v1'
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        workflow: { id: WORKFLOW_ID },
+        user: { id: createStableAnonId(req), name: 'Web User' }
+      })
     });
+
 
     if (!resp.ok) {
       let details;
